@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import useSWR from "swr";
 import ResultsTitle from "../../components/events/results-title";
@@ -16,10 +17,11 @@ const FilteredEvents = (
   const router = useRouter();
   const filterData = router.query.slug;
 
-  const fetcher = (...args) => fetch(...args).then(res => res.json())
+  const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
   const { data, error } = useSWR(
-    "https://nextjs-events-b8332-default-rtdb.firebaseio.com/events.json", fetcher
+    "https://nextjs-events-b8332-default-rtdb.firebaseio.com/events.json",
+    fetcher
   );
 
   useEffect(() => {
@@ -36,8 +38,20 @@ const FilteredEvents = (
     }
   }, [data]);
 
+  let headerData = (
+    <Head>
+      <title>Filtered Events</title>
+      <meta name="description" content={`A list of events.`} />
+    </Head>
+  );
+
   if (!events) {
-    return <p className="center">Loading...</p>;
+    return (
+      <>
+        {headerData}
+        <p className="center">Loading...</p>
+      </>
+    );
   }
 
   let year, month;
@@ -45,6 +59,13 @@ const FilteredEvents = (
   if (filterData) {
     year = +filterData[0];
     month = +filterData[1];
+
+    headerData = (
+      <Head>
+        <title>Filtered Events</title>
+        <meta name="description" content={`All events for ${month}/${year}.`} />
+      </Head>
+    );
   }
 
   if (
@@ -58,6 +79,7 @@ const FilteredEvents = (
   ) {
     return (
       <>
+        {headerData}
         <ErrorAlert>
           <p>Invalid filter. Please adjust your values!</p>
         </ErrorAlert>
@@ -78,6 +100,7 @@ const FilteredEvents = (
   if (!filteredEvents || filteredEvents.length === 0) {
     return (
       <>
+        {headerData}
         <ErrorAlert>
           <p>No events found for the chosen filter!</p>
         </ErrorAlert>
@@ -92,6 +115,7 @@ const FilteredEvents = (
 
   return (
     <>
+      {headerData}
       <ResultsTitle date={date} />
       <EventList items={filteredEvents} />
     </>
